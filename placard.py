@@ -28,7 +28,10 @@ def create_html_barcode(products: dict) -> str:
                         <div class="product-code">{products[key]['code']}</div>
                     </div>
                     <div class="below">
-                        <div class="product-image"><img width="100%" src="{'img/' +  str(products[key]['code']) + '.png'}"></div>
+                        <div class="product-image">
+                            <img alt='{products[key]['code']}'
+                                src='https://barcode.tec-it.com/barcode.ashx?data={products[key]['code']}%0a&code=Code128&translate-esc=on'/>
+                        </div>
                         <div class="product-price">
                             <div class="currency"><b>Rp.</b></div>
                             <span>
