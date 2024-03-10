@@ -1,6 +1,6 @@
 @ECHO OFF
 
-cd C:\Users\Michael Halim\Downloads\Placard\barcode-generator
+cd "D:\Program\Visual Studio Code\Python\Placard Project\barcode-generator"
 
 call env\Scripts\activate
 

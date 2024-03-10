@@ -1,6 +1,4 @@
 import openpyxl
-import barcode
-from barcode.writer import ImageWriter
 import re
 import os
 
@@ -14,41 +12,48 @@ def print_html_barcode(content: str):
         with open('index_print.html', 'w', encoding='utf-8') as file:
             file.write(modified_html)
 
-def create_html_barcode(products: dict) -> str:
+def create_html_barcode(products: dict, n: list) -> str:
     content = ''
     for i, key in enumerate(products):
-        if i % 2 == 0:
-            content += '<div class="row my-5">'
+        for j in range(int(n[i])):
+            if j % 2 == 0:
+                content += '<div class="row my-3">'
+            
+            space = ''
+            products_name = products[key]['name']
+            if len(products[key]['name']) < 38:
+                space = '<br>'
         
-        content += f'''
-            <div class="col-6">
-                <div class="product-card">
-                    <div class="product-info">
-                        <div class="product-name"><b>{products[key]['name']}</b></div>
-                        <div class="product-code">{products[key]['code']}</div>
-                    </div>
-                    <div class="below">
-                        <div class="product-image">
-                            <img alt='{products[key]['code']}'
-                                src='https://barcode.tec-it.com/barcode.ashx?data={products[key]['code']}%0a&code=Code128&translate-esc=on'/>
+
+            content += f'''
+                <div class="col-6">
+                    <div class="product-card">
+                        <div class="product-info">
+                            <div class="product-name"><b> { products_name } </b></div>
+                            {space}
                         </div>
-                        <div class="product-price">
-                            <div class="currency"><b>Rp.</b></div>
-                            <span>
-                                <span class="amount">{format_number(products[key]['price'])}</span>
-                                <span class="unit"> /{products[key]['unit']}</span>
-                            </span>
+                        <div class="below">
+                            <div class="product-image">
+                                <img alt='{products[key]['code']}'
+                                    src='https://barcode.tec-it.com/barcode.ashx?data={products[key]['code']}%0a&code=Code128&translate-esc=on'/>
+                            </div>
+                            <div class="product-price">
+                                <div class="currency"><b>Rp.</b></div>
+                                <span>
+                                    <span class="amount">{format_number(products[key]['price'])}</span>
+                                    <span class="unit"> /{products[key]['unit']}</span>
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        '''
+            '''
 
-        if i % 2 == 1:
-            content += '</div>'
+            if j % 2 == 1:
+                content += '</div>'
 
-    if len(products) % 2 == 1:
-            content += '</div>'
+            if len(products) % 2 == 1:
+                    content += '</div>'
 
     return content
 
@@ -83,7 +88,8 @@ def main():
         print('1. Upload Data Dari Excel')
         print('2. Buat Barcode')
         print('3. Pilih Data Yang Ingin Di Pilih')
-        print('4. Keluar')
+        print('4. Pilih Data Yang Ingin Di Print Dengan Jumlah Tertentu')
+        print('5. Keluar')
         choice = int(input('Pilih: '))
 
         if choice == 1:
@@ -108,10 +114,8 @@ def main():
                     'unit': row[3],
                 }
 
-                code39 = barcode.codex.Code39(str(row[0]), writer=ImageWriter(), add_checksum=False)
-                code39.save('img/' + str(row[0]))
-
-            content = create_html_barcode(products)
+            amounts = [1] * len(products)
+            content = create_html_barcode(products, amounts)
             
             input('Data berhasil di upload, tekan enter untuk melanjutkan')
 
@@ -126,10 +130,25 @@ def main():
                 if key in products: selected_products[key] = products[key]
                 else: print('Kode produk', key, 'tidak ditemukan')
 
-            print_html_barcode(create_html_barcode(selected_products))
+            amounts = [1] * len(selected_products)
+            print_html_barcode(create_html_barcode(selected_products, amounts))
             input('Data berhasil di upload, tekan enter untuk melanjutkan')
 
-        elif choice == 4: break
+        elif choice == 4:
+            selected = input('Pilih kode produk yang ingin di buat barcode dipisahkan spasi (contoh: 12 123 1234): ').split(' ')
+            selected_products = {}
+            for key in selected:
+                if key in products: selected_products[key] = products[key]
+                else: print('Kode produk', key, 'tidak ditemukan')
+
+            amounts = input('Masukkan jumlah barcode yang ingin di print: ').split()
+            while(len(amounts) != len(selected)):
+                amounts = input('Masukkan jumlah barcode yang ingin di print: ').split()
+            
+            print_html_barcode(create_html_barcode(selected_products, amounts))
+            input('Data berhasil di upload, tekan enter untuk melanjutkan')
+
+        elif choice == 5: break
         else: break
 
 if __name__ == '__main__':
